@@ -5,9 +5,8 @@ input::-webkit-inner-spin-button {
   margin: 0;
 }
 
-/* Firefox */
-input[type=number] {
-  -moz-appearance: textfield;
+.timetable-container tr:nth-last-child(1){
+    align-items: center;
 }
 
 th,td{

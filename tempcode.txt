@@ -4,39 +4,64 @@ include 'database.php';
 
 function generateDaySchedule(&$remaining_subjects, $labs, $labtime, &$combination_array) {
     $daySchedule = array();
-    for ($i = 0; $i < 4 && count($remaining_subjects) > 0; $i++) {
-        $rand_num = rand(0, count($remaining_subjects) - 1);
-        while (in_array($remaining_subjects[$rand_num], $combination_array)){
+    $rand_num = rand(0, count($remaining_subjects) - 1);
+    for ($i = 0; $i < 5; $i++) {
+        while (in_array($rand_num, $combination_array) || $remaining_subjects[$rand_num]['lecture_hour'] == 0){
             $rand_num = rand(0, count($remaining_subjects) - 1);
         }
-        $daySchedule[$i] = $remaining_subjects[$rand_num];
-        array_push($combination_array, $remaining_subjects[$rand_num]);
-        unset($remaining_subjects[$rand_num]);
-        $remaining_subjects = array_values($remaining_subjects);
+        if($remaining_subjects[$rand_num]['lecture_hour'] != 0){
+            array_push($combination_array, $rand_num);
+            $daySchedule[$i] = $remaining_subjects[$rand_num];
+        }
+        $remaining_subjects[$rand_num]['lecture_hour']--;
+        // this code is for lab selection
+        // if ($i == $labtime) {
+        //     $daySchedule[$i] = array();
+        //     for ($j = 0; $j < 3; $j++) {
+        //         $rand_lab = rand(0, count($labs) - 1);
+        //         $daySchedule[$i][$j] = $labs[$rand_lab];
+        //     }
+        // }
     }
     
     return $daySchedule;
 }
+    
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $subjects = array();
     $labs = array();
+    $lab_index = 0;
     $comb_monday = array();
     $comb_tuesday = array();
     $comb_wednesday = array();
-    $comb_thursday = array();
+    $comb_thurday = array();
     $comb_friday = array();
 
     $monday = array();
     $tuesday = array(); 
     $wednesday = array(); 
-    $thursday = array();
+    $thurday = array();
     $friday = array();
 
     for ($i=0; $i < 5; $i++) { 
-        for ($j=0; $j < $_POST['lecture_hour'][$i]; $j++) { 
-            $subjects[] = $_POST['subject'][$i]; 
+        $subjects[$i] = array(
+            "subject_code" => $_POST['subject_code'][$i], 
+            "subject" => $_POST['subject'][$i],
+            "lecture_hour" => $_POST['lecture_hour'][$i],
+            "lab_hour" => $_POST['lab_hour'][$i],
+        );
+        if($_POST['lab_hour'][$i] != 0){
+            $labs[$lab_index++] = array(
+                "subject_code" => $_POST['subject_code'][$i], 
+                "subject" => $_POST['subject'][$i],
+                "lecture_hour" => $_POST['lecture_hour'][$i],
+                "lab_hour" => $_POST['lab_hour'][$i],
+                "0" => false,
+                "1" => false,
+                "2" => false
+            );
         }
     }
 
@@ -45,14 +70,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $monday = generateDaySchedule($remaining_subjects, $labs, 2, $comb_monday);
     $tuesday = generateDaySchedule($remaining_subjects, $labs, 0, $comb_tuesday);
     $wednesday = generateDaySchedule($remaining_subjects, $labs, 0, $comb_wednesday);
-    $thursday = generateDaySchedule($remaining_subjects, $labs, 2, $comb_thursday);
+    $thurday = generateDaySchedule($remaining_subjects, $labs, 2, $comb_thurday);
     $friday = generateDaySchedule($remaining_subjects, $labs, 2, $comb_friday);
 
-    // print_r($monday);
-    // print_r($tuesday);
-    // print_r($wednesday);
-    print_r($thursday);
-    // print_r($friday);
+
     print_r($remaining_subjects);
 }
 
@@ -70,34 +91,34 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <th>Monday</th>
                     <th>Tuesday</th>
                     <th>Wednesday</th>
-                    <th>thursday</th>
+                    <th>Thurday</th>
                     <th>Friday</th>
                     <th>Saturday</th>
                 </tr>
                 <tr>
                     <td><b>09:15 to 10:10</b></td>
                     <td>
-                        <center><span>'.$monday[0].'</span></center>
+                        <center><span>'.$monday[0]['subject'].'</span></center>
                     </td>
                     <td rowspan="2">
                         <center>';
                         foreach($tuesday[0] as $value){
-                            echo $value . '<br>';
+                            echo $value['subject'] . '<br>';
                         }
                     echo'</center>
                     </td>
                     <td rowspan="2">
                         <center>';
                         foreach($wednesday[0] as $value){
-                            echo $value . '<br>';
+                            echo $value['subject'] . '<br>';
                         }
                     echo'</center>
                     </td>
                     <td>
-                        <center>'.$thursday[0].'</center>
+                        <center>'.$thurday[0]['subject'].'</center>
                     </td>
                     <td>
-                        <center>'.$friday[0].'</center>
+                        <center>'.$friday[0]['subject'].'</center>
                     </td>
                     <td rowspan="2">
                         <center>Unit Test / <br> Extra Lecture</center>
@@ -106,13 +127,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <tr>
                     <td><b>10:10 to 11:05</b></td>
                     <td>
-                        <center>'.$monday[1].'</center>
+                        <center>'.$monday[1]['subject'].'</center>
                     </td>
                     <td>
-                        <center>'.$thursday[1].'</center>
+                        <center>'.$thurday[1]['subject'].'</center>
                     </td>
                     <td>
-                        <center>'.$friday[1].'</center>
+                        <center>'.$friday[1]['subject'].'</center>
                     </td>
                 </tr>
                 <tr>
@@ -126,27 +147,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <td rowspan="2">
                         <center>';
                         foreach($monday[2] as $value){
-                            echo $value . '<br>';
+                            echo $value['subject'] . '<br>';
                         }
                     echo'</center>
                     </td>
                     <td>
-                        <center>'.$tuesday[1].'</center>
+                        <center>'.$tuesday[1]['subject'].'</center>
                     </td>
                     <td>
-                        <center>'.$wednesday[1].'</center>
+                        <center>'.$wednesday[1]['subject'].'</center>
                     </td>
                     <td rowspan="2">
                         <center>';
-                        foreach($thursday[2] as $value){
-                            echo $value . '<br>';
+                        foreach($thurday[2] as $value){
+                            echo $value['subject'] . '<br>';
                         }
                     echo'</center>
                     </td>
                     <td rowspan="2">
                         <center>';
                         foreach($friday[2] as $value){
-                            echo $value . '<br>';
+                            echo $value['subject'] . '<br>';
                         }
                     echo'</center>
                     </td>
@@ -157,10 +178,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <tr>
                     <td><b>12:10 to 01:05</b></td>
                     <td>
-                        <center>'.$tuesday[2].'</center>
+                        <center>'.$tuesday[2]['subject'].'</center>
                     </td>
                     <td>
-                        <center>'.$wednesday[2].'</center>
+                        <center>'.$wednesday[2]['subject'].'</center>
                     </td>
                 </tr>
                 <tr>
@@ -172,16 +193,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <tr>
                     <td><b>02:00 to 02:55</b></td>
                     <td>
-                        <center>'.$monday[3].'</center>
+                        <center>'.$monday[3]['subject'].'</center>
                     </td>
                     <td>
-                        <center>'.$tuesday[3].'</center>
+                        <center>'.$tuesday[3]['subject'].'</center>
                     </td>
                     <td>
-                        <center>'.$wednesday[3].'</center>
+                        <center>'.$wednesday[3]['subject'].'</center>
                     </td>
                     <td>
-                        <center>'.$thursday[3].'</center>
+                        <center>'.$thurday[3]['subject'].'</center>
                     </td>
                     <td>
                         <center>Student Counselling</center>
@@ -193,19 +214,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <tr>
                     <td><b>02:55 to 03:50</b></td>
                     <td>
-                        <center>'.$monday[4].'</center>
+                        <center>'.$monday[4]['subject'].'</center>
                     </td>
                     <td>
-                        <center>'.$tuesday[4].'</center>
+                        <center>'.$tuesday[4]['subject'].'</center>
                     </td>
                     <td>
                         <center>Library</center>
                     </td>
                     <td>
-                        <center>'.$thursday[4].'</center>
+                        <center>'.$thurday[4]['subject'].'</center>
                     </td>
                     <td>
-                        <center>'.$friday[4].'</center>
+                        <center>'.$friday[4]['subject'].'</center>
                     </td>
                 </tr>
                 <tr>
@@ -216,6 +237,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </center>
     </body>  
     ';
+
 ?>
 
 

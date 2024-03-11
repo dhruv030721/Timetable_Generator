@@ -20,12 +20,11 @@
             </div>
             <form action="generatetimetable.php" method="POST" id="timetableForm">
                 <div class="border-2 table-container">
-                    <table>
+                    <table class="font-bold">
                         <thead>
                             <tr>
                                 <th>Subject Code</th>
                                 <th>Subject</th>
-                                <th>Faculty</th>
                                 <th>Lecture Hours</th>
                                 <th>Lab Hours</th>
                             </tr>
@@ -44,10 +43,6 @@
                                 </td>
                                 <td>
                                     <input type="text" id="subject['.$input.']" name="subject[]"
-                                        class="focus:outline-none rounded px-2 bg-gray-200" required>
-                                </td>
-                                <td>
-                                    <input type="text" id="faculty['.$input.']" name="faculty[]"
                                         class="focus:outline-none rounded px-2 bg-gray-200" required>
                                 </td>
                                 <td>
